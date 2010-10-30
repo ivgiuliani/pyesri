@@ -8,6 +8,7 @@ from utils import binread, binread_first
 
 class ShapeFile(object):
     SHP_FILE_CODE = 9994
+    SHP_HEADER_SIZE = 100 # in bytes
 
     def __init__(self, filename):
         self.filename = filename
@@ -58,9 +59,9 @@ class ShapeFile(object):
         if self.fd.tell() != bytelength:
             sys.stderr.write("warning: inexeact file end (differs from what header says)\n")
 
-        # reposition fp to the beginning of file so we can start reading
+        # reposition fp just right after the header so we can start reading
         # again if we want to
-        self.fd.seek(0)
+        self.fd.seek(self.SHP_HEADER_SIZE)
         return
 
 if __name__ == '__main__':
