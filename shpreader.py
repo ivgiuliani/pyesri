@@ -19,7 +19,14 @@ class ShapeFile(object):
 
         self.fd = open(filename, "rb")
         self.get_header()
-        self.read_records()
+        
+        bytelength = self.shp_filelength * 2
+        while self.fd.tell() < bytelength:
+            self.read_records()
+        
+        if self.fd.tell() != bytelength:
+            print "warning: inexeact file end (differs from what header says)"
+        self.fd.close()
 
     def get_header(self):
         prolog = binread(self.fd, ">iiiiii")

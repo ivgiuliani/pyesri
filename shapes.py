@@ -43,12 +43,12 @@ class Shape(object):
         self.record_id = record_id
 
     def __str__(self):
-        stradd = self.__str_add__()
+        stradd = self.__str_more__()
         if stradd:
             stradd = " %s" % stradd
         return "%d:%s%s" % (self.record_id, resolve_shape_name(self.shape_type), stradd)
 
-    def __str_add__(self):
+    def __str_more__(self):
         "additional str() informations"
         return ""
 
@@ -80,6 +80,7 @@ class PolyLineShape(Shape):
 
         self.numparts = 0
         self.numpoints = 0
+        self.parts, self.points = [], []
 
     def read(self, fd):
         self.bbox_xmin, \
@@ -90,7 +91,10 @@ class PolyLineShape(Shape):
         self.numparts = binread_first(fd, "<i")
         self.numpoints = binread_first(fd, "<i")
 
-    def __str_add__(self):
+        self.parts = binread(fd, "<" + "i" * self.numparts)
+        self.points = [binread(fd, PointShape.read_fmt) for item in range(self.numpoints)]
+
+    def __str_more__(self):
         return "%d parts, %d points" % (self.numparts, self.numpoints)
 
 class PolygonShape(Shape):
