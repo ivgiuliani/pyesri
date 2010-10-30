@@ -68,18 +68,24 @@ class Shape(object):
     def __init__(self, record_id):
         self.record_id = record_id
 
+    def __repr__(self):
+        return "<Shape:%s>" % resolve_shape_name(self.shape_type)
+
+    def read(self, fd):
+        raise NotImplementedError
+
+class BasicShape(Shape):
     def __str__(self):
         stradd = self.__str_more__()
         if stradd:
             stradd = " %s" % stradd
-        return "%d:%s%s" % (self.record_id, resolve_shape_name(self.shape_type), stradd)
+        return "%d:%s%s" % (self.record_id,
+                            resolve_shape_name(self.shape_type),
+                            stradd)
 
     def __str_more__(self):
         "additional str() informations"
         return ""
-
-    def __repr__(self):
-        return "<Shape:%s>" % resolve_shape_name(self.shape_type)
 
     def read(self, fd):
         # basic read() for simpler types, you'll probably want
@@ -92,12 +98,12 @@ class Shape(object):
 class NullShape(Shape):
     pass
 
-class PointShape(Shape):
+class PointShape(BasicShape):
     shape_type = SHAPE_TYPE_POINT
     read_fmt = "<dd"
     read_fmt_field_mapping = [ "x", "y" ]
 
-class PolyLineShape(Shape):
+class PolyLineShape(BasicShape):
     shape_type = SHAPE_TYPE_POLYLINE
 
     def __init__(self, *args, **kwargs):
@@ -118,10 +124,10 @@ class PolyLineShape(Shape):
     def __str_more__(self):
         return "%d parts, %d points" % (self.numparts, self.numpoints)
 
-class PolygonShape(PolyLineShape):
+class PolygonShape(BasicPolyLineShape):
     shape_type = SHAPE_TYPE_POLYGON
 
-class MultiPointShape(Shape):
+class MultiPointShape(BasicShape):
     shape_type = SHAPE_TYPE_MULTIPOINT
 
     def __init__(self, *args, **kwargs):
@@ -139,7 +145,7 @@ class MultiPointShape(Shape):
     def __str_more__(self):
         return "%d points" % (self.numpoints, )
 
-class PointZShape(Shape):
+class PointZShape(BasicShape):
     shape_type = SHAPE_TYPE_POINTZ
     read_fmt = "<dddd"
     read_fmt_mapping = [ "x", "y", "z", "m" ]
@@ -164,7 +170,7 @@ class PolyLineZShape(PolyLineShape):
 class PolygonZShape(PolyLineZShape):
     shape_type = SHAPE_TYPE_POLYGONZ
 
-class MultiPointZShape(Shape):
+class MultiPointZShape(BasicShape):
     shape_type = SHAPE_TYPE_MULTIPOINTZ
 
     def __init__(self, *args, **kwargs):
@@ -185,7 +191,7 @@ class MultiPointZShape(Shape):
         self.mrange = binread(fd, "<dd")
         self.measures = binread(fd, "<" + "d" * self.numpoints)
 
-class PointMShape(Shape):
+class PointMShape(BasicShape):
     shape_type = SHAPE_TYPE_POINTM
     read_fmt = "<ddd"
     read_fmt_field_mapping = [ "x", "y", "m" ]
@@ -206,7 +212,7 @@ class PolyLineMShape(PolyLineShape):
 class PolygonMShape(PolyLineMShape):
     shape_type = SHAPE_TYPE_POLYGON
 
-class MultiPointMShape(Shape):
+class MultiPointMShape(BasicShape):
     shape_type = SHAPE_TYPE_MULTIPOINTM
 
     def __init__(self, *args, **kwargs):
@@ -224,7 +230,7 @@ class MultiPointMShape(Shape):
         self.mrange = binread(fd, "<dd")
         self.measures = binread(fd, "<" + "d" * self.numpoints)
 
-class MultiPatchShape(Shape):
+class MultiPatchShape(BasicShape):
     shape_type = SHAPE_TYPE_MULTIPATCH
     # TODO
 
