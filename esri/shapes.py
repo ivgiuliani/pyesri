@@ -167,6 +167,21 @@ class PolygonMShape(Shape):
 class MultiPointMShape(Shape):
     shape_type = SHAPE_TYPE_MULTIPOINTM
 
+    def __init__(self, *args, **kwargs):
+        Shape.__init__(self, *args, **kwargs)
+        self.bounding_box = BoundingBox()
+        self.numpoints = 0
+        self.points = []
+        self.mrange = [0, 0]
+        self.measures = []
+
+    def read(self, fd):
+        self.bounding_box.read(fd)
+        self.numpoints = binread_first(fd, "<i")
+        self.points = [binread(fd, PointShape.read_fmt) for item in range(self.numpoints)]
+        self.mrange = binread(fd, "<dd")
+        self.measures = binread(fd, "<" + "d" * self.numpoints)
+
 class MultiPatchShape(Shape):
     shape_type = SHAPE_TYPE_MULTIPATCH
 
