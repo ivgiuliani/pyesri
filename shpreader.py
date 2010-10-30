@@ -6,6 +6,8 @@ import shapes
 from utils import binread, binread_first
 
 class ShapeFile(object):
+    SHP_FILE_CODE = 9994
+
     def __init__(self, filename):
         self.filename = filename
         
@@ -31,7 +33,7 @@ class ShapeFile(object):
     def get_header(self):
         prolog = binread(self.fd, ">iiiiii")
         # only the first field is used and has a fixed value
-        if prolog[0] != 9994:
+        if prolog[0] != self.SHP_FILE_CODE:
             print "warning: wrong file code"
         self.shp_filelength = binread_first(self.fd, ">i")
         self.shp_version = binread_first(self.fd, "<i")
