@@ -15,6 +15,13 @@ SHAPE_TYPE_POLYGONM    = 25
 SHAPE_TYPE_MULTIPOINTM = 28
 SHAPE_TYPE_MULTIPATCH  = 31
 
+class BoundingBox(object):
+    X_MIN, Y_MIN, X_MAX, Y_MAX = 0, 1, 2, 3
+    def __init__(self):
+        self.bbox = [None] * 4
+    def read(self, fd):
+        self.bbox = binread(fd, "<dddd")
+
 def resolve_shape_name(shp_type):
     "Resolves shape type constant to shape name"
     return {
@@ -76,21 +83,13 @@ class PolyLineShape(Shape):
 
     def __init__(self, *args, **kwargs):
         Shape.__init__(self, *args, **kwargs)
-        self.bbox_xmin, \
-        self.bbox_ymin, \
-        self.bbox_xmax, \
-        self.bbox_ymax = [None] * 4
-
+        self.bounding_box = BoundingBox()
         self.numparts = 0
         self.numpoints = 0
         self.parts, self.points = [], []
 
     def read(self, fd):
-        self.bbox_xmin, \
-        self.bbox_ymin, \
-        self.bbox_xmax, \
-        self.bbox_ymax = binread(fd, "<dddd")
-
+        self.bounding_box.read(fd)
         self.numparts = binread_first(fd, "<i")
         self.numpoints = binread_first(fd, "<i")
 
@@ -106,6 +105,21 @@ class PolygonShape(PolyLineShape):
 class MultiPointShape(Shape):
     shape_type = SHAPE_TYPE_MULTIPOINT
 
+    def __init__(self, *args, **kwargs):
+        Shape.__init__(self, *args, **kwargs)
+        self.bounding_box = BoundingBox()
+        self.numpoints = 0
+        self.self.points = []
+
+    def read(self, fd):
+        self.bounding_box.read(fd)
+        self.numparts = binread_first(fd, "<i")
+        self.numpoints = binread_first(fd, "<i")
+        self.points = [binread(fd, PointShape.read_fmt) for item in range(self.numpoints)]
+
+    def __str_more__(self):
+        return "%d points" % (self.numpoints, )
+
 class PointZShape(Shape):
     shape_type = SHAPE_TYPE_POINTZ
 
@@ -120,6 +134,8 @@ class MultiPointZShape(Shape):
 
 class PointMShape(Shape):
     shape_type = SHAPE_TYPE_POINTM
+    read_fmt = "<ddd"
+    read_fmt_field_mapping = [ "x", "y", "m" ]
 
 class PolyLineMShape(Shape):
     shape_type = SHAPE_TYPE_POLYLINEM
