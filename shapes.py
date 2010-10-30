@@ -122,6 +122,8 @@ class MultiPointShape(Shape):
 
 class PointZShape(Shape):
     shape_type = SHAPE_TYPE_POINTZ
+    read_fmt = "<dddd"
+    read_fmt_mapping = [ "x", "y", "z", "m" ]
 
 class PolyLineZShape(Shape):
     shape_Type = SHAPE_TYPE_POLYLINEZ
