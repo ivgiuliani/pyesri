@@ -1,4 +1,4 @@
-from utils import binread, binread_first
+from esri.utils import binread, binread_first
 
 SHAPE_TYPE_NULL        = 0
 SHAPE_TYPE_POINT       = 1
@@ -17,10 +17,29 @@ SHAPE_TYPE_MULTIPATCH  = 31
 
 class BoundingBox(object):
     X_MIN, Y_MIN, X_MAX, Y_MAX = 0, 1, 2, 3
+
     def __init__(self):
         self.bbox = [None] * 4
+
     def read(self, fd):
         self.bbox = binread(fd, "<dddd")
+
+    def get_x_min(self):
+        return self.bbox[self.X_MIN]
+
+    def get_x_max(self):
+        return self.bbox[self.X_MAX]
+
+    def get_y_min(self):
+        return self.bbox[self.Y_MIN]
+
+    def get_y_max(self):
+        return self.bbox[self.Y_MAX]
+
+    x_min = property(get_x_min)
+    x_max = property(get_x_max)
+    y_min = property(get_y_min)
+    x_max = property(get_y_max)
 
 def resolve_shape_name(shp_type):
     "Resolves shape type constant to shape name"
