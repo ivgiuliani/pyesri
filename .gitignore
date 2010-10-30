@@ -1,0 +1,10 @@
+*.swp
+*.pyc
+*.dbf
+*.prj
+*.sbn
+*.sbx
+*.shp
+*.shp.xml
+*.shx
+*.zip
