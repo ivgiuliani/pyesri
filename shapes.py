@@ -100,7 +100,7 @@ class PolyLineShape(Shape):
     def __str_more__(self):
         return "%d parts, %d points" % (self.numparts, self.numpoints)
 
-class PolygonShape(Shape):
+class PolygonShape(PolyLineShape):
     shape_type = SHAPE_TYPE_POLYGON
 
 class MultiPointShape(Shape):
