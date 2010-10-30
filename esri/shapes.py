@@ -144,24 +144,66 @@ class PointZShape(Shape):
     read_fmt = "<dddd"
     read_fmt_mapping = [ "x", "y", "z", "m" ]
 
-class PolyLineZShape(Shape):
+class PolyLineZShape(PolyLineShape):
     shape_Type = SHAPE_TYPE_POLYLINEZ
 
-class PolygonZShape(Shape):
+    def __init__(self, *args, **kwargs):
+        PolyLineShape.__init__(self, *args, **kwargs)
+        self.zrange = [0, 0]
+        self.zvalues = []
+        self.mrange = [0, 0]
+        self.measures = []
+
+    def read(self, fd):
+        PolyLineShape.read(self, fd)
+        self.zrange = binread(fd, "<dd")
+        self.zvalues = binread(fd, "<" + "d" * self.numpoints)
+        self.mrange = binread(fd, "<dd")
+        self.measures = binread(fd, "<" + "d" * self.numpoints)
+
+class PolygonZShape(PolyLineZShape):
     shape_type = SHAPE_TYPE_POLYGONZ
 
 class MultiPointZShape(Shape):
     shape_type = SHAPE_TYPE_MULTIPOINTZ
+
+    def __init__(self, *args, **kwargs):
+        self.bounding_box = BoundingBox()
+        self.numpoints = 0
+        self.points = []
+        self.zrange = [0, 0]
+        self.zvalues = []
+        self.mrange = [0, 0]
+        self.measures = []
+
+    def read(self, fd):
+        self.bounding_box.read(fd)
+        self.numpoints = binread_first(fd, "<i")
+        self.points = [binread(fd, PointShape.read_fmt) for item in range(self.numpoints)]
+        self.zrange = binread(fd, "<dd")
+        self.zvalues = binread(fd, "<" + "d" * self.numpoints)
+        self.mrange = binread(fd, "<dd")
+        self.measures = binread(fd, "<" + "d" * self.numpoints)
 
 class PointMShape(Shape):
     shape_type = SHAPE_TYPE_POINTM
     read_fmt = "<ddd"
     read_fmt_field_mapping = [ "x", "y", "m" ]
 
-class PolyLineMShape(Shape):
+class PolyLineMShape(PolyLineShape):
     shape_type = SHAPE_TYPE_POLYLINEM
 
-class PolygonMShape(Shape):
+    def __init__(self, *args, **kwargs):
+        PolyLineShape.__init__(self, *args, **kwargs)
+        self.mrange = [0, 0]
+        self.measures = []
+
+    def read(self, fd):
+        PolyLineShape.read(self, fd)
+        self.mrange = binread(fd, "<dd")
+        self.measures = binread(fd, "<" + "d" * self.numpoints)
+
+class PolygonMShape(PolyLineMShape):
     shape_type = SHAPE_TYPE_POLYGON
 
 class MultiPointMShape(Shape):
@@ -184,6 +226,7 @@ class MultiPointMShape(Shape):
 
 class MultiPatchShape(Shape):
     shape_type = SHAPE_TYPE_MULTIPATCH
+    # TODO
 
 def type_to_class(shp_type):
     return {
