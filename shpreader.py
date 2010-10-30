@@ -21,14 +21,14 @@ class ShapeFile(object):
 
         self.fd = open(filename, "rb")
         self.get_header()
-        
-        bytelength = self.shp_filelength * 2
-        while self.fd.tell() < bytelength:
-            self.read_records()
-        
-        if self.fd.tell() != bytelength:
-            print "warning: inexeact file end (differs from what header says)"
-        self.fd.close()
+
+    def __iter__(self):
+        return self.get_record()
+
+    def next(self):
+        rec = self.get_record()
+        if not rec:
+            raise StopIteration
 
     def get_header(self):
         prolog = binread(self.fd, ">iiiiii")
@@ -43,14 +43,24 @@ class ShapeFile(object):
         self.shp_bbox_zmin, self.shp_bbox_zmax = binread(self.fd, "<dd")
         self.shp_bbox_mmin, self.shp_bbox_mmax = binread(self.fd, "<dd")
 
-    def read_records(self):
-        r_id = binread_first(self.fd, ">i")
-        r_content_length = binread_first(self.fd, ">i")
-        r_shape = binread_first(self.fd, "<i")
+    def get_record(self):
+        bytelength = self.shp_filelength * 2
+        while self.fd.tell() < bytelength:
+            r_id = binread_first(self.fd, ">i")
+            r_content_length = binread_first(self.fd, ">i")
+            r_shape = binread_first(self.fd, "<i")
 
-        klass = shapes.type_to_class(r_shape)(r_id)
-        klass.read(self.fd)
-        print klass
+            klass = shapes.type_to_class(r_shape)(r_id)
+            klass.read(self.fd)
+            yield klass
+
+        if self.fd.tell() != bytelength:
+            print "warning: inexeact file end (differs from what header says)"
+
+        # reposition fp to the beginning of file so we can start reading
+        # again if we want to
+        self.fd.seek(0)
+        return
 
     def print_info(self):
         print "File length: %d" % self.shp_filelength
@@ -62,7 +72,10 @@ class ShapeFile(object):
         print "Bounding Box M min/max: %d/%d" % (self.shp_bbox_mmin, self.shp_bbox_mmax)
 
 
-
 if __name__ == '__main__':
     e = ShapeFile("10m-admin-0-boundary-lines-land.shp")
     e.print_info()
+
+    for record in e:
+        print repr(record), type(record), str(record)
+

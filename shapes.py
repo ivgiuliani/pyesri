@@ -52,6 +52,9 @@ class Shape(object):
         "additional str() informations"
         return ""
 
+    def __repr__(self):
+        return "<Shape:%s>" % resolve_shape_name(self.shape_type)
+
     def read(self, fd):
         # basic read() for simpler types, you'll probably want
         # to override this
