@@ -56,27 +56,23 @@ class ShapeFile(object):
             yield klass
 
         if self.fd.tell() != bytelength:
-            print "warning: inexeact file end (differs from what header says)"
+            sys.stderr.write("warning: inexeact file end (differs from what header says)\n")
 
         # reposition fp to the beginning of file so we can start reading
         # again if we want to
         self.fd.seek(0)
         return
 
-    def print_info(self):
-        print "File length: %d" % self.shp_filelength
-        print "SHP version: %d" % self.shp_version
-        print "Shape type: %s" % shapes.resolve_shape_name(self.shp_shape_type)
-        print "Bounding Box X min/max: %d/%d" % (self.shp_bbox_xmin, self.shp_bbox_xmax)
-        print "Bounding Box Y min/max: %d/%d" % (self.shp_bbox_ymin, self.shp_bbox_ymax)
-        print "Bounding Box Z min/max: %d/%d" % (self.shp_bbox_zmin, self.shp_bbox_zmax)
-        print "Bounding Box M min/max: %d/%d" % (self.shp_bbox_mmin, self.shp_bbox_mmax)
-
-
 if __name__ == '__main__':
     e = ShapeFile(sys.argv[1])
-    e.print_info()
+    print "File length: %d" % e.shp_filelength
+    print "SHP version: %d" % e.shp_version
+    print "Shape type: %s" % shapes.resolve_shape_name(e.shp_shape_type)
+    print "Bounding Box X min/max: %d/%d" % (e.shp_bbox_xmin, e.shp_bbox_xmax)
+    print "Bounding Box Y min/max: %d/%d" % (e.shp_bbox_ymin, e.shp_bbox_ymax)
+    print "Bounding Box Z min/max: %d/%d" % (e.shp_bbox_zmin, e.shp_bbox_zmax)
+    print "Bounding Box M min/max: %d/%d" % (e.shp_bbox_mmin, e.shp_bbox_mmax)
 
     for record in e:
-        print repr(record), type(record), str(record)
+        print record
 
