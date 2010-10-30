@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import struct
 
 import shapes
@@ -73,7 +74,7 @@ class ShapeFile(object):
 
 
 if __name__ == '__main__':
-    e = ShapeFile("10m-admin-0-boundary-lines-land.shp")
+    e = ShapeFile(sys.argv[1])
     e.print_info()
 
     for record in e:
