@@ -22,17 +22,17 @@ class ShapeFile(object):
         self.shp_bbox_mmin, self.shp_bbox_mmax = 0, 0
 
         self.fd = open(filename, "rb")
-        self.get_header()
+        self._read_header()
 
     def __iter__(self):
-        return self.get_record()
+        return self.get_shapes()
 
     def next(self):
-        rec = self.get_record()
+        rec = self.get_shapes()
         if not rec:
             raise StopIteration
 
-    def get_header(self):
+    def _read_header(self):
         prolog = binread(self.fd, ">iiiiii")
         # only the first field is used and has a fixed value
         if prolog[0] != self.SHP_FILE_CODE:
@@ -45,7 +45,7 @@ class ShapeFile(object):
         self.shp_bbox_zmin, self.shp_bbox_zmax = binread(self.fd, "<dd")
         self.shp_bbox_mmin, self.shp_bbox_mmax = binread(self.fd, "<dd")
 
-    def get_record(self):
+    def get_shapes(self):
         bytelength = self.shp_filelength * 2
         while self.fd.tell() < bytelength:
             r_id = binread_first(self.fd, ">i")
@@ -74,6 +74,6 @@ if __name__ == '__main__':
     print "Bounding Box Z min/max: %d/%d" % (e.shp_bbox_zmin, e.shp_bbox_zmax)
     print "Bounding Box M min/max: %d/%d" % (e.shp_bbox_mmin, e.shp_bbox_mmax)
 
-    for record in e:
-        print record
+    for shape in e:
+        print shape
 
